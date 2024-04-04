@@ -1,7 +1,7 @@
 const { ethers } = require('hardhat');
 const { Web3 } = require('web3');
 
-async function deployContractAndSignMessage() {
+async function main() {
     const Example = await ethers.getContractFactory('Example');
     const example = await Example.deploy();
     await example.deployed();
@@ -22,4 +22,9 @@ async function deployContractAndSignMessage() {
     console.log(wallet);
 }
 
-deployContractAndSignMessage().catch((error) => console.error(error));
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
