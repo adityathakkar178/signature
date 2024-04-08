@@ -1,5 +1,6 @@
 const express = require('express');
 const { Web3 } = require('web3');
+const fs = require('fs');
 
 const app = express();
 const port = 3001;
@@ -21,6 +22,39 @@ app.use((req, res, next) => {
         return res.status(200).json({});
     }
     next();
+});
+
+const getContractABI = () => {
+    return new Promise((resolve, reject) => {
+        const artifactsPath = './artifacts/contracts/Contract.sol/Example.json';
+        fs.readFile(artifactsPath, 'utf8', (error, contractJSON) => {
+            if (error) {
+                console.error('Error getting contract ABI:', error);
+                reject(error);
+            } else {
+                const contractData = JSON.parse(contractJSON);
+                const abi = contractData.abi;
+                resolve(abi);
+            }
+        });
+    });
+};
+
+app.get('/contract-abi', (req, res) => {
+    getContractABI()
+        .then((abi) => {
+            if (abi) {
+                res.json({ abi });
+            } else {
+                res.status(500).json({
+                    error: 'Failed to retrieve contract ABI.',
+                });
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
 });
 
 app.post('/sign', async (req, res) => {
