@@ -5,11 +5,6 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 contract Example is EIP712 {
-    struct Person {
-        string name;
-        address wallet;
-    }
-
     struct EIP712Domain {
         string name;
         string version;
