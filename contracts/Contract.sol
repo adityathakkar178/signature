@@ -5,12 +5,6 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 contract Example is EIP712 {
-    struct Mail {
-        Person from;
-        Person to;
-        string contents;
-    }
-
     struct Person {
         string name;
         address wallet;
@@ -27,8 +21,8 @@ contract Example is EIP712 {
         keccak256(
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
-    bytes32 private constant MAIL_TYPEHASH =
-        keccak256("Mail(Person from,Person to,string contents)");
+    bytes32 private constant MESSAGE_TYPEHASH =
+        keccak256("Message(string message)");
 
     bytes32 private DOMAIN_SEPARATOR;
 
@@ -44,38 +38,18 @@ contract Example is EIP712 {
         );
     }
 
-    function hashMail(Mail memory mail) private pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    MAIL_TYPEHASH,
-                    hashPerson(mail.from),
-                    hashPerson(mail.to),
-                    keccak256(bytes(mail.contents))
-                )
-            );
-    }
-
-    function hashPerson(Person memory person) private pure returns (bytes32) {
-        return keccak256(abi.encode(person.name, person.wallet));
-    }
-
     function verifySignature(
-        Person memory from,
-        Person memory to,
-        string memory contents,
-        bytes memory signature
+        string memory message,
+        bytes memory signature,
+        address signerAddress
     ) public view returns (bool) {
-        Mail memory mail = Mail(from, to, contents);
-        bytes32 mailHash = hashMail(mail);
+        bytes32 messageHash = keccak256(
+            abi.encode(MESSAGE_TYPEHASH, keccak256(bytes(message)))
+        );
         bytes32 structHash = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, mailHash)
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, messageHash)
         );
         address recoveredSigner = ECDSA.recover(structHash, signature);
-        return recoveredSigner == from.wallet;
+        return recoveredSigner == signerAddress;
     }
 }
-
-// ["Aditya", "0x2D4742c77824E4faFbee5720AB4Aa34bf3602da8"]
-// ["Thakkar","0x0fF73A331A49Da82e2517Cb7Cd1f38283ad75251"]
-// xzcczx0x718dae20e0e5379ae5d5a445d2095e76ca39345554743c83fe0887209d9b6db561ea22a2f555e28df687b42a2647a700a7c7486587662901570a3f9cf0c258f01b
