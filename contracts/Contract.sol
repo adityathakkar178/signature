@@ -13,7 +13,7 @@ contract Example is EIP712 {
     }
 
     bytes32 private constant MESSAGE_TYPEHASH =
-        keccak256("Message(string message, uint256 value, address sender)");
+        keccak256("Message(string message,uint256 value,address sender)");
 
     constructor() EIP712("Ether Mail", "1") {}
 
